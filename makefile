@@ -8,5 +8,7 @@ all : gpm test/inp1
 	cmp test/out3 test/exp3
 	./gpm < test/inp4 > test/out4
 	cmp test/out4 test/exp4
+	./gpm < test/inp5 > test/out5
+	cmp test/out5 test/exp5
 clean :
-	rm -f gpm test/out1 test/out2 test/out3 test/out4
+	rm -f gpm test/out1 test/out2 test/out3 test/out4 test/out5

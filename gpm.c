@@ -2,14 +2,16 @@
 #include <string.h>	// strcmp, strdup
 
 void
-match(char close, char *s) {
+match(char open, char close, char *s) {
 	char c;
+	int nest=1;
 
 	while ((c=getchar()) != EOF) {
-		if (c==close) {
+		if (c==close && --nest==0) {
 			*s++=0;
 			return;
 		}
+		if (c==open) nest++;
 		*s++=c;
 	}
 }
@@ -92,7 +94,7 @@ main() {
 
 	while ((c=getchar()) != EOF) {
 		if (c=='{') {
-			match('}', buf);
+			match('{', '}', buf);
 			expand(buf);
 		} else {
 			putchar(c);
