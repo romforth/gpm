@@ -14,8 +14,6 @@ match(char close, char *s) {
 	}
 }
 
-char *defs[26];
-
 void
 subst(char *p, int arg, char **args) {
 	char c;
@@ -46,6 +44,24 @@ split(char *buf, int arg, char **args) {
 	return arg;
 }
 
+#define NMACROS 1000
+
+struct macro {
+	char *name;
+	char *body;
+} macros[NMACROS];
+
+int nmac=0;
+
+char *
+find(char *m) {
+	for (int i=nmac-1;i>=0;i--) {
+		if (strcmp(m, macros[i].name)) continue;
+		return macros[i].body;
+	}
+	return 0;
+}
+
 void
 expand(char *buf) {
 	char *args[100];
@@ -54,7 +70,7 @@ expand(char *buf) {
 
 	if (strcmp(args[0], "def")) {
 		char *body;
-		if (body=defs[*args[0]-'A']) {
+		if (body=find(args[0])) {
 			subst(body, arg, args);
 		} else {
 			for (int i=0;i<arg;i++) {
@@ -63,7 +79,9 @@ expand(char *buf) {
 			}
 		}
 	} else {
-		defs[*args[1]-'A']=strdup(args[2]);
+		macros[nmac].name=strdup(args[1]);
+		macros[nmac].body=strdup(args[2]);
+		nmac++;
 	}
 }
 

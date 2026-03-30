@@ -1,0 +1,15 @@
+{def ABC AB$1C$2AB}
+{ABC XY PQ}
+-> ABXYCPQAB
+{def A A$1A}
+{def APA P$1$1P}
+{A C}
+-> ACA
+{A ACA}
+-> AACAA
+{A XDX}
+-> AXDXA
+{A P}
+-> APA
+{APA Y}
+-> PYYP
