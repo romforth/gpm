@@ -1,0 +1,5 @@
+{def A X}
+{def B foo}
+{def C bar}
+{A} {B} {C}
+-> X foo bar
