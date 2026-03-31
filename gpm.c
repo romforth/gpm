@@ -1,6 +1,22 @@
 #include <stdio.h>	// getchar, putchar, EOF
 #include <string.h>	// strcmp, strdup
 
+char *
+skip(char open, char close, char *s) {
+	char c;
+	int nest=1;
+
+	while (c=*s) {
+		if (c==close && --nest==0) {
+			*s=0;
+			return s+1;
+		}
+		if (c==open) nest++;
+		s++;
+	}
+	return 0;
+}
+
 void
 match(char open, char close, char *s) {
 	char c;
@@ -16,18 +32,19 @@ match(char open, char close, char *s) {
 	}
 }
 
-void
-subst(char *p, int arg, char **args) {
+char *
+subst(char *src, char *dst, int arg, char **args) {
 	char c;
 
-	while (c=*p++) {
+	while (c=*src++) {
 		if (c=='$') {
-			int n=*p++-'0';
-			subst(args[n], arg, args);
+			int n=*src++-'0';
+			for (char *p=args[n]; *dst=*p++; dst++);
 		} else {
-			putchar(c);
+			*dst++=c;
 		}
 	}
+	return dst;
 }
 
 int
@@ -36,6 +53,14 @@ split(char *buf, int arg, char **args) {
 
 	args[arg++]=buf;
 	while (c=*buf) {
+		if (c=='[') {
+			args[arg-1]++;
+			buf=skip('[',']',++buf);
+			if (buf) {
+				args[arg++]=buf;
+				continue;
+			}
+		}
 		if (c==' ') {
 			*buf++=0;
 			args[arg++]=buf;
@@ -65,21 +90,22 @@ find(char *m) {
 }
 
 void
-expand(char *buf) {
+expand(char *src, char *dst) {
 	char *args[100];
 
-	int arg=split(buf, 0, args);
+	int arg=split(src, 0, args);
 
 	if (strcmp(args[0], "def")) {
 		char *body;
 		if (body=find(args[0])) {
-			subst(body, arg, args);
+			dst=subst(body, dst, arg, args);
 		} else {
 			for (int i=0;i<arg;i++) {
-				subst(args[i], arg, args);
-				if (i!=arg-1) putchar(' ');
+				dst=subst(args[i], dst, arg, args);
+				if (i!=arg-1) *dst++=' ';
 			}
 		}
+		*dst=0;
 	} else {
 		macros[nmac].name=strdup(args[1]);
 		macros[nmac].body=strdup(args[2]);
@@ -87,15 +113,20 @@ expand(char *buf) {
 	}
 }
 
+#define MACROLEN 10000
+
 int
 main() {
 	char c;
 	char buf[100];
+	char dst[MACROLEN];
 
 	while ((c=getchar()) != EOF) {
 		if (c=='{') {
 			match('{', '}', buf);
-			expand(buf);
+			*dst=0;
+			expand(buf, dst);
+			printf("%s", dst);
 		} else {
 			putchar(c);
 		}
