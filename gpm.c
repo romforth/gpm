@@ -1,5 +1,6 @@
 #include <stdio.h>	// getchar, putchar, EOF
 #include <string.h>	// strcmp, strdup
+#include <stdlib.h>	// free
 
 char *
 skip(char open, char close, char *s) {
@@ -89,15 +90,26 @@ find(char *m) {
 	return 0;
 }
 
+char *process(int top, char *buf);
+
 char *
 expand(char *src, char *dst) {
 	char *args[100];
 
 	int arg=split(src, 0, args);
 
-	if (strcmp(args[0], "def")) {
+	char *name=args[0];
+
+	if (strcmp(name, "def")) {
 		char *body;
-		if (body=find(args[0])) {
+		if (name[0]=='{') {
+			name=process(0, name);
+			body=find(name);
+			free(name);
+		} else {
+			body=find(name);
+		}
+		if (body) {
 			dst=subst(body, dst, arg, args);
 		} else {
 			for (int i=0;i<arg;i++) {
@@ -135,29 +147,44 @@ macro(char *src, char *dst) {
 
 #define MACROLEN 10000
 
+char *
+process(int top, char *buf) {
+	char dst[MACROLEN], *cur=dst;
+	char src[MACROLEN];
+
+	*dst=0;
+	if (buf[0]=='{') {
+		char *next=skip('{', '}', buf+1);
+		char *end=expand(buf+1, dst);
+		strcpy(end, next);
+		return process(top, dst);
+	} else {
+		expand(buf, dst);
+	}
+	for(;;) {
+		if (macro(dst, src)) {
+			if (macro(src, dst)) {
+				continue;
+			}
+			cur=src;
+		}
+		if (top) {
+			printf("%s", cur);
+			return 0;
+		}
+		return strdup(cur);
+	}
+}
+
 int
 main() {
 	char c;
-	char buf[100];
-	char dst[MACROLEN], *cur=dst;
-	char src[MACROLEN];
+	char buf[MACROLEN];
 
 	while ((c=getchar()) != EOF) {
 		if (c=='{') {
 			match('{', '}', buf);
-			*dst=0;
-			expand(buf, dst);
-			for(;;) {
-				if (macro(dst, src)) {
-					if (macro(src, dst)) {
-						continue;
-					}
-					cur=src;
-				}
-				printf("%s", cur);
-				cur=dst;
-				break;
-			}
+			process(1, buf);
 		} else {
 			putchar(c);
 		}
