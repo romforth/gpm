@@ -37,9 +37,18 @@ char *
 subst(char *src, char *dst, int arg, char **args) {
 	char c;
 
+	// printf("subst src:%s arg:%d\n", src, arg);
 	while (c=*src++) {
 		if (c=='$') {
-			int n=*src++-'0';
+			c=*src++;
+			if (c=='*') {
+				for (int i=1; i<arg; i++) {
+					for (char *p=args[i]; *dst=*p++; dst++);
+					if (i!=arg-1) *dst++=' ';
+				}
+				continue;
+			}
+			int n=c-'0';
 			for (char *p=args[n]; *dst=*p++; dst++);
 		} else {
 			*dst++=c;
@@ -153,6 +162,7 @@ process(int top, char *buf) {
 	int redo=0;
 	char c, *s=buf, *d=dst;
 
+	// printf("process %d, %s\n", top, buf);
 	while (c=*s++) {
 		if (c!='{') {
 			*d++=c;
@@ -168,6 +178,7 @@ process(int top, char *buf) {
 	}
 	*d=0;
 	if (redo) return process(top, dst);
+	// printf("process rest %d, %s\n", top, buf);
 	*dst=0;
 	expand(buf, dst);
 	for(;;) {

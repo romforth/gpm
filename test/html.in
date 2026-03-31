@@ -1,0 +1,3 @@
+{def h1 <h1>$*</h1>}
+{h1 foo bar}
+-> <h1>foo bar</h1>
