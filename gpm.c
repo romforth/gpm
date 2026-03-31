@@ -103,7 +103,7 @@ expand(char *src, char *dst) {
 	if (strcmp(name, "def")) {
 		char *body;
 		if (name[0]=='{') {
-			name=process(0, name);
+			name=process(1, name);
 			body=find(name);
 			free(name);
 		} else {
@@ -129,12 +129,11 @@ expand(char *src, char *dst) {
 int
 macro(char *src, char *dst) {
 	char c;
-	char *next;
 	int flag=0;
 
 	while (c=*src++) {
 		if (c=='{') {
-			next=skip('{', '}', src);
+			char *next=skip('{', '}', src);
 			dst=expand(src, dst);
 			src=next;
 			flag=1;
@@ -155,8 +154,10 @@ process(int top, char *buf) {
 	*dst=0;
 	if (buf[0]=='{') {
 		char *next=skip('{', '}', buf+1);
-		char *end=expand(buf+1, dst);
-		strcpy(end, next);
+		char *ret=process(top+1, buf+1);
+		char *r=ret; char *d=dst; while (*d++=*r++); // strcpy(dst, ret);
+		free(ret);
+		d--; r=next; while (*d++=*r++); // strcat(dst, next)
 		return process(top, dst);
 	} else {
 		expand(buf, dst);
@@ -168,7 +169,7 @@ process(int top, char *buf) {
 			}
 			cur=src;
 		}
-		if (top) {
+		if (top==0) {
 			printf("%s", cur);
 			return 0;
 		}
@@ -184,7 +185,7 @@ main() {
 	while ((c=getchar()) != EOF) {
 		if (c=='{') {
 			match('{', '}', buf);
-			process(1, buf);
+			process(0, buf);
 		} else {
 			putchar(c);
 		}
