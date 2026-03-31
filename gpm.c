@@ -89,7 +89,7 @@ find(char *m) {
 	return 0;
 }
 
-void
+char *
 expand(char *src, char *dst) {
 	char *args[100];
 
@@ -111,6 +111,26 @@ expand(char *src, char *dst) {
 		macros[nmac].body=strdup(args[2]);
 		nmac++;
 	}
+	return dst;
+}
+
+int
+macro(char *src, char *dst) {
+	char c;
+	char *next;
+	int flag=0;
+
+	while (c=*src++) {
+		if (c=='{') {
+			next=skip('{', '}', src);
+			dst=expand(src, dst);
+			src=next;
+			flag=1;
+		} else {
+			*dst++=c;
+		}
+	}
+	return flag;
 }
 
 #define MACROLEN 10000
@@ -119,14 +139,25 @@ int
 main() {
 	char c;
 	char buf[100];
-	char dst[MACROLEN];
+	char dst[MACROLEN], *cur=dst;
+	char src[MACROLEN];
 
 	while ((c=getchar()) != EOF) {
 		if (c=='{') {
 			match('{', '}', buf);
 			*dst=0;
 			expand(buf, dst);
-			printf("%s", dst);
+			for(;;) {
+				if (macro(dst, src)) {
+					if (macro(src, dst)) {
+						continue;
+					}
+					cur=src;
+				}
+				printf("%s", cur);
+				cur=dst;
+				break;
+			}
 		} else {
 			putchar(c);
 		}

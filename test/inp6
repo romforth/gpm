@@ -1,3 +1,4 @@
+{def A A$1A}
 {def B [B{A X$1X}B]}
 {B D}
 -> BAXDXAB
