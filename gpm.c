@@ -150,18 +150,26 @@ char *
 process(int top, char *buf) {
 	char dst[MACROLEN], *cur=dst;
 	char src[MACROLEN];
+	int redo=0;
+	char c, *s=buf, *d=dst;
 
-	*dst=0;
-	if (buf[0]=='{') {
-		char *next=skip('{', '}', buf+1);
-		char *ret=process(top+1, buf+1);
-		char *r=ret; char *d=dst; while (*d++=*r++); // strcpy(dst, ret);
+	while (c=*s++) {
+		if (c!='{') {
+			*d++=c;
+			continue;
+		}
+		redo=1;
+		char *next=skip('{', '}', s);
+		char *ret=process(top+1, s);
+		char *r=ret; while (*d++=*r++); // strcpy(dst, ret);
 		free(ret);
-		d--; r=next; while (*d++=*r++); // strcat(dst, next)
-		return process(top, dst);
-	} else {
-		expand(buf, dst);
+		d--;
+		s=next;
 	}
+	*d=0;
+	if (redo) return process(top, dst);
+	*dst=0;
+	expand(buf, dst);
 	for(;;) {
 		if (macro(dst, src)) {
 			if (macro(src, dst)) {
