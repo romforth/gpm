@@ -1,0 +1,9 @@
+
+
+
+
+	pop word [bx]
+	
+	pop bx
+
+

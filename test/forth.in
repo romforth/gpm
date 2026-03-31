@@ -1,0 +1,9 @@
+{def tos bx}
+{def drop [
+	pop {tos}
+]}
+{def ! [
+	pop word [{tos}]
+	{drop}
+]}
+{!}

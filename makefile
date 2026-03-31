@@ -20,6 +20,8 @@ all : gpm test/inp1
 	cmp test/out9 test/exp9
 	./gpm < test/html.in > test/html.out
 	cmp test/html.out test/html.exp
+	./gpm < test/forth.in > test/forth.out
+	cmp test/forth.out test/forth.exp
 
 clean :
-	rm -f gpm test/out1 test/out2 test/out3 test/out4 test/out5 test/out6 test/out7 test/out8 test/out9 test/html.out
+	rm -f gpm test/out1 test/out2 test/out3 test/out4 test/out5 test/out6 test/out7 test/out8 test/out9 test/html.out test/forth.out
